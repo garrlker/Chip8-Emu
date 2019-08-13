@@ -1,0 +1,13 @@
+headers = SDL.h stdlib.h time.h
+entryPoint = SDL_main
+
+headerFilter = SDL* stdlib.h time.h
+
+compilerOpts = -D_POSIX_SOURCE
+compilerOpts.osx = -I/usr/local/include/SDL2 -D_THREAD_SAFE
+compilerOpts.linux = -D_REENTRANT
+compilerOpts.ios =
+
+linkerOpts.osx = -L/usr/local/lib -lSDL2
+linkerOpts.linux = -L/usr/lib64 -L/usr/lib/x86_64-linux-gnu -L/lib/x86_64-linux-gnu/ -lSDL2
+#/usr/local/Cellar/sdl2/2.0.9_1/

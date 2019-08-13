@@ -1,0 +1,4 @@
+sdl-build/*
+dist/*
+chip8.kexe
+*.klib
