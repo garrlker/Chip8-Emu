@@ -31,7 +31,7 @@ class Display() {
     SDL_Init(SDL_INIT_VIDEO);
   
     if(this.createWindow()){
-      println( "Window could not be created! SDL_Error");
+      println( "Window could not be created! SDL_Error: $window");
     }else{
       //Get window surface
       screenSurface = SDL_GetWindowSurface( window );
@@ -64,7 +64,7 @@ class Display() {
   }
 
   fun createTexture() {
-        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 640, 480);
+        // texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 640, 480);
   }
 
   fun createWindow() : Boolean {
@@ -83,6 +83,6 @@ class Display() {
     //   }
     // }
 
-    SDL_UpdateTexture(texture, NULL, pixels, 640 * sizeof(Uint32));
+    // SDL_UpdateTexture(texture, NULL, pixels, 640 * sizeof(Uint32));
   }
 }
