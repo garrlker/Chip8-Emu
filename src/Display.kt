@@ -2,6 +2,7 @@ package display
 import sdl.*
 import kotlinx.cinterop.*
 
+
 class Display() {
 
   // Window handle
@@ -16,9 +17,9 @@ class Display() {
   // Renderer
   var renderer: CPointer<SDL_Renderer>? = null;
 
-  // Colors
-  var cWhite: Uint32? = null;
-  var cBlack: Uint32? = null;
+  // Rectangle
+  var pixel = nativeHeap.alloc<SDL_Rect>();
+
 
   // Framebuffer
   var buffer: Array<Boolean?> = arrayOfNulls(64 * 32);
@@ -29,32 +30,30 @@ class Display() {
 
   fun init() {
     SDL_Init(SDL_INIT_VIDEO);
-  
-    if(this.createWindow()){
-      println( "Window could not be created! SDL_Error: $window");
-    }else{
-      //Get window surface
-      screenSurface = SDL_GetWindowSurface( window );
 
-      // Build the 2 colors for our surface
-      this.buildColors();
+    if(this.createWindow()){
+      //Get window surface
+      // screenSurface = SDL_GetWindowSurface( window );
+      this.createTexture()
+      this.creatRect()
+
+      SDL_SetRenderTarget(renderer, texture);
 
       renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-      //Fill the surface white
-      // SDL_FillRect( screenSurface, null, SDL_MapRGB( screenSurface!!.pointed.format, 0xFF, 0xFF, 0xFF ) );
-      
-      //Update the surface
-      // SDL_UpdateWindowSurface( window );
+      SDL_SetRenderDrawColor( renderer, 0xFF, 0x00, 0x00, 0xFF );        
+      SDL_RenderDrawRect( renderer, pixel.ptr );
+
+      SDL_RenderPresent( renderer );
+
+      // SDL_RenderCopy(renderer, texture, null, null);
 
       //Wait two seconds
       SDL_Delay( 10000 );
-    }
-  }
 
-  fun buildColors() {
-    cWhite = SDL_MapRGB(screenSurface!!.pointed.format, 255, 255, 255);
-    cBlack = SDL_MapRGB(screenSurface!!.pointed.format, 0, 0, 0);
+    }else{
+      println( "Window could not be created!");
+    }
   }
 
   fun cleanRenderer(){
@@ -63,14 +62,20 @@ class Display() {
     SDL_DestroyRenderer(renderer);
   }
 
+  fun creatRect(){
+    pixel.x = 160;
+    pixel.y = 160;
+    pixel.w = 100;
+    pixel.h = 100;
+  }
+
   fun createTexture() {
-        // texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 640, 480);
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, 0, 640, 480);
   }
 
   fun createWindow() : Boolean {
-    //Create window
     window = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_CENTERED.toInt(), SDL_WINDOWPOS_CENTERED.toInt(), SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
-    
+
     return if (window == null) false else true;
   }
 

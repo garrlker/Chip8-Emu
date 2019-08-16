@@ -62,19 +62,24 @@ fun nanoToMilli(nanosecond: Long): Double {
 fun main() {
     println("Starting up")
     initClock();
-    // disp.init();
+    var clockTarget: Int = 0;
+
+    disp.init();
 
     while(loop){
       updateClocks()
 
       if(cpuTick()){
-        println("CPU Tick")
+        // println("CPU Tick")
+        clockTarget += 1;
       }
     
 
       if(displayTick()){
-        println("Display Tick");
+        // println("Display Tick");
+        // println("$clockTarget");
+        clockTarget = 0;
       }
-      // println(elapsedTime);
+
     }
 }
