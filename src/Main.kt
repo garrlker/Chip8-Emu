@@ -1,85 +1,34 @@
-import display.*
+import Chip8.*
 import kotlin.system.getTimeNanos
 import kotlin.coroutines.*
 
-var loop : Boolean = true;
-val disp = display.Display();
-
-
-// Timing
-val cpuHz = 1000 / 500;
-val displayHz = 1000 / 60;
-var cpuDelta : Long = 0;
-var displayDelta : Long = 0;
-var clockDelta : Long = 0;
-var prevClock : Long = 0;
-
-// Debug
-var shutOff = 10000;
-var current = 0;
-var cpuCount = 0;
-var elapsedTime : Long = 0;
-
-fun initClock(){
-  clockDelta = getTimeNanos();
-}
-
-fun updateClocks() {
-  prevClock = clockDelta;
-  clockDelta = getTimeNanos();
-   
-  cpuDelta += clockDelta - prevClock;
-  displayDelta += clockDelta - prevClock;
-}
-
-fun cpuTick() : Boolean{
-  if(nanoToMilli(cpuDelta) > cpuHz){
-    current += 1;
-
-    if(current >= shutOff){
-      loop = false;
-    }
-
-    cpuDelta = 0;
-    return true;
-  }
-  return false;
-}
-
-fun displayTick() : Boolean {
-  if(nanoToMilli(displayDelta) > displayHz){
-    displayDelta = 0;
-    return true;
-  }
-  return false;
-}
-
-fun nanoToMilli(nanosecond: Long): Double {
-  return nanosecond.toDouble() / 1000000
-}
-
-
-fun main() {
-    println("Starting up")
-    initClock();
+fun main(args: Array<String>) {
+    var loop : Boolean = true;
     var clockTarget: Int = 0;
+    val disp = Chip8.Display();
+    val clock = Chip8.Clock();
+    var maxCycles: Int = 10000;
+    var numCycles: Int = 0;
 
+    if(args.size > 0){
+      val fPointer = Chip8.File(args[0]);
+    }
     disp.init();
+      clock.registerFunction({
+          clockTarget += 1;
+          numCycles += 1;
+
+          if(numCycles > maxCycles) loop = false;
+      }, 500)
+
+      clock.registerFunction({
+          println("Disp Tick: $clockTarget")
+          clockTarget = 0;
+      }, 60)
+
 
     while(loop){
-      updateClocks()
-
-      if(cpuTick()){
-        // println("CPU Tick")
-        clockTarget += 1;
-      }
     
-
-      if(displayTick()){
-        // println("Display Tick");
-        // println("$clockTarget");
-        clockTarget = 0;
-      }
-
+      clock.update();
     }
 }

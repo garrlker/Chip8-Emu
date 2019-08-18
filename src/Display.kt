@@ -1,10 +1,9 @@
-package display
+package Chip8
 import sdl.*
 import kotlinx.cinterop.*
 
 
 class Display() {
-
   // Window handle
   var window: CPointer<SDL_Window>? = null
 
@@ -19,7 +18,6 @@ class Display() {
 
   // Rectangle
   var pixel = nativeHeap.alloc<SDL_Rect>();
-
 
   // Framebuffer
   var buffer: Array<Boolean?> = arrayOfNulls(64 * 32);
@@ -41,15 +39,21 @@ class Display() {
 
       renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-      SDL_SetRenderDrawColor( renderer, 0xFF, 0x00, 0x00, 0xFF );        
-      SDL_RenderDrawRect( renderer, pixel.ptr );
+      this.clearScreen();
+
+      SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0xFF, 0xFF );    
+      SDL_RenderDrawPoint(renderer, 32, 32)
+      SDL_RenderDrawPoint(renderer, 32, 33)
+      SDL_RenderDrawPoint(renderer, 32, 34)
+          
+      SDL_RenderFillRect( renderer, pixel.ptr );
 
       SDL_RenderPresent( renderer );
 
-      // SDL_RenderCopy(renderer, texture, null, null);
+      SDL_RenderCopy(renderer, texture, null, null);
 
       //Wait two seconds
-      SDL_Delay( 10000 );
+      // SDL_Delay( 10000 );
 
     }else{
       println( "Window could not be created!");
@@ -60,6 +64,11 @@ class Display() {
     // delete[] pixels;
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
+  }
+
+  fun clearScreen(){
+    SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xFF );
+    SDL_RenderFillRect(renderer, null);    
   }
 
   fun creatRect(){
@@ -77,6 +86,10 @@ class Display() {
     window = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_CENTERED.toInt(), SDL_WINDOWPOS_CENTERED.toInt(), SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
 
     return if (window == null) false else true;
+  }
+
+  fun getBuffer(): Array<Boolean?> {
+    return buffer;
   }
 
   fun draw() {
