@@ -1,4 +1,5 @@
 sdl-build/*
 dist/*
+roms/*
 chip8.kexe
 *.klib

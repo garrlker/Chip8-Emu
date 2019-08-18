@@ -1,37 +1,37 @@
 # Functions
 function buildApp () {
   echo "Building Application";
-  kotlinc src/Main.kt -l display -l file -l clock -l processor -o chip8;
+  kotlinc src/Main.kt -l ch8display -l ch8file -l ch8clock -l ch8processor -o chip8;
 }
 
 function buildClock () {
   echo "Building Clock";
-  kotlinc src/Clock.kt -p library -o clock;
-  klib install clock.klib;
+  kotlinc src/Clock.kt -p library -o ch8clock;
+  klib install ch8clock.klib;
 }
 
 function buildCPU () {
   echo "Building CPU";
-  kotlinc src/Processor.kt -l memory -p library -o processor;
-  klib install processor.klib;
+  kotlinc src/Processor.kt -l ch8memory -p library -o ch8processor;
+  klib install ch8processor.klib;
 }
 
 function buildDisplay () {
   echo "Building Display";
-  kotlinc src/Display.kt -l sdl -p library -o display;
-  klib install display.klib;
+  kotlinc src/Display.kt -l sdl -p library -o ch8display;
+  klib install ch8display.klib;
 }
 
 function buildFile () {
   echo "Building File";
-  kotlinc src/File.kt -p library -o file;
-  klib install file.klib;
+  kotlinc src/File.kt -p library -o ch8file;
+  klib install ch8file.klib;
 }
 
 function buildMemory () {
   echo "Building Memory";
-  kotlinc src/Memory.kt -p library -o memory;
-  klib install memory.klib;
+  kotlinc src/Memory.kt -p library -o ch8memory;
+  klib install ch8memory.klib;
 }
 
 if [ "$1" == "" ]
@@ -50,7 +50,7 @@ if [ "$1" == "all" ]
     buildApp
 fi
 
-if [ "$1" == "clock" ]
+if [ "$1" == "ch8clock" ]
   then
   buildClock
 fi
@@ -65,7 +65,7 @@ if [ "$1" == "disp" ]
   buildDisplay
 fi
 
-if [ "$1" == "file" ]
+if [ "$1" == "ch8file" ]
   then
   buildFile
 fi
