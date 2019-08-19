@@ -17,19 +17,20 @@ fun main(args: Array<String>) {
     if(args.size > 0){
       var file = Chip8.File(args[0]);
       cpu.setProgram(file.get());
-      cpu.printMemory();
+      // cpu.printMemory();
     }
 
     disp.init();
     clock.registerFunction({
       clockTarget += 1;
       numCycles += 1;
+      cpu.tick();
 
       if(numCycles > maxCycles) loop = false;
     }, 500)
 
     clock.registerFunction({
-      // println("Disp Tick: $clockTarget")
+      println("Disp Tick: $clockTarget")
       clockTarget = 0;
     }, 60)
 

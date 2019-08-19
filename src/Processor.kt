@@ -1,5 +1,6 @@
 package Chip8
 import Chip8.Memory
+
 const val START_ADDR: UInt = 0x200u;
 
 class Processor() {
@@ -37,6 +38,9 @@ class Processor() {
 
   fun execute(op: UInt){
     println(op.toString(16));
+    val regX = getFirstNibble(op);
+    val regY = getSecondNibble(op);
+
     when {
       /*            
       00E0 - CLS
@@ -86,7 +90,7 @@ class Processor() {
       }
 
       isOpcodeGroup(0x3u, op) -> {
-        val reg = getFirstNibble(op).toInt();
+        val reg = getFirstNibble(op);
 
         if(regV[reg] == getByteFromOp(op)){
           incrementPC()
@@ -95,7 +99,7 @@ class Processor() {
       }
 
       isOpcodeGroup(0x4u, op) -> {
-        val reg = getFirstNibble(op).toInt();
+        val reg = getFirstNibble(op);
 
         if(regV[reg] != getByteFromOp(op)){
           incrementPC()
@@ -104,8 +108,8 @@ class Processor() {
       }
 
       isOpcodeGroup(0x5u, op) -> {
-        val reg1 = getFirstNibble(op).toInt();
-        val reg2 = getSecondNibble(op).toInt();
+        val reg1 = getFirstNibble(op);
+        val reg2 = getSecondNibble(op);
 
         if(regV[reg1] == regV[reg2]){
           incrementPC()
@@ -114,20 +118,119 @@ class Processor() {
       }
 
       isOpcodeGroup(0x6u, op) -> {
-        val reg = getFirstNibble(op).toInt();
+        val reg = getFirstNibble(op);
         regV[reg] = getByteFromOp(op);
       }
 
       isOpcodeGroup(0x7u, op) -> {
-        val reg = getFirstNibble(op).toInt();
+        val reg = getFirstNibble(op);
         regV[reg] += getByteFromOp(op);
 
         // Cap for 8 bits
-        if(regV[reg] > 255) {
-          regV -= 255
+        if(regV[reg] > 255u) {
+          regV[reg] -= 255u
         }
       }
 
+      isOpcodeGroup(0x8u, op) -> {
+
+        when {
+          getThirdNibble(op) == 0 -> {
+            regV[regX] = regV[regY];
+          }
+
+          getThirdNibble(op) == 1 -> {
+            regV[regX] = regV[regX].or(regV[regY]);
+          }
+
+          getThirdNibble(op) == 2 -> {
+            regV[regX] = regV[regX].and(regV[regY]);
+          }
+
+          getThirdNibble(op) == 3 -> {
+            regV[regX] = regV[regX].xor(regV[regY]);
+          }
+
+          getThirdNibble(op) == 4 -> {
+            regV[regX] = regV[regX] + regV[regY];
+            if(regV[regX] > 0xFFu){
+              regV[regX] -= 255u;
+              setCarryFlag(1);
+            }else{
+              setCarryFlag(0);
+            }
+          }
+
+          getThirdNibble(op) == 5 -> {
+
+            if(regV[regX] > regV[regY]){
+              setCarryFlag(1);
+            }else{
+              setCarryFlag(0);
+            }
+
+            regV[regX] = regV[regX] - regV[regY];
+          }
+
+          getThirdNibble(op) == 6 -> {
+            if(regV[regX].and(1u) == 1u){
+              setCarryFlag(1);
+            }else{
+              setCarryFlag(0);
+            }
+
+            regV[regX] = regV[regX].shr(1);
+          }
+
+          getThirdNibble(op) == 7 -> {
+
+            if(regV[regY] > regV[regX]){
+              setCarryFlag(1);
+            }else{
+              setCarryFlag(0);
+            }
+
+            regV[regX] = regV[regY] - regV[regX];
+          }
+
+          getThirdNibble(op) == 0xE -> {
+            if(regV[regX].and(128u) == 128u){
+              setCarryFlag(1);
+            }else{
+              setCarryFlag(0);
+            }
+
+            regV[regX] = regV[regX].shl(1).and(0xFFu);
+          }
+
+          else -> println("Unknown opcode: ${op.toString(16)}");
+        }
+      }
+
+      isOpcodeGroup(0x9u, op) -> {
+        if(regV[regX] != regV[regY]){
+          incrementPC()
+          incrementPC();
+        }
+      }
+
+      isOpcodeGroup(0xAu, op) -> {
+        regI = getAddressFromOp(op);
+      }
+
+      isOpcodeGroup(0xBu, op) -> {
+        pc = getAddressFromOp(op) + regV[0];
+      }
+
+      isOpcodeGroup(0xCu, op) -> {
+        regV[regX] = (0u..255u).random().and(getByteFromOp(op));
+      }
+
+      isOpcodeGroup(0xDu, op) -> {
+        println("Display Opcode");
+      }
+
+      else -> println("Unknown opcode: ${op.toString(16)}");
     }
   }
 
@@ -139,12 +242,16 @@ class Processor() {
     return opcode.and(0xFFu);
   }
 
-  fun getFirstNibble(opcode: UInt): UInt {
-    return opcode.and(0x0F00u).shr(8);
+  fun getFirstNibble(opcode: UInt): Int {
+    return opcode.and(0x0F00u).shr(8).toInt();
   }
 
-  fun getSecondNibble(opcode: UInt): UInt {
-    return opcode.and(0x00F0u).shr(4);
+  fun getSecondNibble(opcode: UInt): Int {
+    return opcode.and(0x00F0u).shr(4).toInt();
+  }
+
+  fun getThirdNibble(opcode: UInt): Int {
+    return opcode.and(0xFu).toInt();
   }
 
   fun incrementPC(){
@@ -176,6 +283,10 @@ class Processor() {
 
       println("$temp1 $temp2 $temp3 $temp4");
     }
+  }
+
+  fun setCarryFlag(value: Int){
+    regV[0xF] = value.toUInt();
   }
 
   // Apparently kotlin's bitwise doesn't support bytes...
