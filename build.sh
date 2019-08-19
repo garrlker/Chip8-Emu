@@ -50,7 +50,7 @@ if [ "$1" == "all" ]
     buildApp
 fi
 
-if [ "$1" == "ch8clock" ]
+if [ "$1" == "clock" ]
   then
   buildClock
 fi
@@ -65,7 +65,7 @@ if [ "$1" == "disp" ]
   buildDisplay
 fi
 
-if [ "$1" == "ch8file" ]
+if [ "$1" == "file" ]
   then
   buildFile
 fi
