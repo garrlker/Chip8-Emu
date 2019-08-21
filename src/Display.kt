@@ -20,7 +20,7 @@ class Display() {
   var pixel = nativeHeap.alloc<SDL_Rect>();
 
   // Framebuffer
-  var buffer: Array<Boolean?> = arrayOfNulls(64 * 32);
+  var buffer = BooleanArray(64 * 32);
 
   // Window Dimensions
   val SCREEN_WIDTH: Int = 640
@@ -41,16 +41,12 @@ class Display() {
 
       this.clearScreen();
 
-      SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0xFF, 0xFF );    
-      SDL_RenderDrawPoint(renderer, 32, 32)
-      SDL_RenderDrawPoint(renderer, 32, 33)
-      SDL_RenderDrawPoint(renderer, 32, 34)
-          
-      SDL_RenderFillRect( renderer, pixel.ptr );
-
       SDL_RenderPresent( renderer );
 
       SDL_RenderCopy(renderer, texture, null, null);
+
+      //This is debug to test our renderer
+      buffer[1040] = true;
 
       //Wait two seconds
       // SDL_Delay( 10000 );
@@ -68,14 +64,14 @@ class Display() {
 
   fun clearScreen(){
     SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xFF );
-    SDL_RenderFillRect(renderer, null);    
+    SDL_RenderFillRect(renderer, null);
   }
 
   fun creatRect(){
-    pixel.x = 160;
-    pixel.y = 160;
-    pixel.w = 100;
-    pixel.h = 100;
+    pixel.x = 0;
+    pixel.y = 0;
+    pixel.w = 64;
+    pixel.h = 32;
   }
 
   fun createTexture() {
@@ -88,19 +84,46 @@ class Display() {
     return if (window == null) false else true;
   }
 
-  fun getBuffer(): Array<Boolean?> {
+  fun drawBlackPixel(){
+    SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xFF );
+    SDL_RenderFillRect( renderer, pixel.ptr );
+    // SDL_RenderCopy(renderer, texture, null, null);
+  }
+
+  fun drawWhitePixel(){
+    println("Drawing White Pixel");
+    SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
+    SDL_RenderFillRect( renderer, pixel.ptr );
+    // SDL_RenderCopy(renderer, texture, null, null);
+  }
+
+  fun getBuffer(): BooleanArray {
     return buffer;
   }
 
-  fun draw() {
-    // for(i in 0..(64 * 32)) {
-    //   buffer.get(i)?.let {
-    //     if(buffer.get(i)){
-    //       SDL_FillRect(s, NULL, );
-    //     }
-    //   }
-    // }
+  fun getPixel(x: Int, y: Int): Boolean {
+    return buffer[(y * 32) + x];
+  }
 
-    // SDL_UpdateTexture(texture, NULL, pixels, 640 * sizeof(Uint32));
+  fun draw() {
+    for(x in 0 until 64){
+      for(y in 0 until 32){
+        this.setRectPosition(x, y)
+
+        if(getPixel(x, y)){
+          drawWhitePixel();
+        }else{
+          drawBlackPixel()
+        }
+      }
+    }
+
+    SDL_RenderCopy(renderer, texture, null, null);
+    SDL_RenderPresent( renderer );
+  }
+
+  fun setRectPosition(x: Int, y: Int){
+    pixel.x = x * 64;
+    pixel.y = y * 32;
   }
 }

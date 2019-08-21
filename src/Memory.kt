@@ -48,6 +48,10 @@ class Memory() {
       return 0u
   }
 
+  fun getCharSpriteAddr(address: UInt): UInt{
+    return 5u * address;
+  }
+
   fun set(address: UInt, data: UByte){
     if(address >= 0u && 4096u >= address)
       buffer[address.toInt()] = data;

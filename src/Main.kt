@@ -21,6 +21,7 @@ fun main(args: Array<String>) {
     }
 
     disp.init();
+    cpu.setDisplayBuffer(disp.getBuffer());
     clock.registerFunction({
       clockTarget += 1;
       numCycles += 1;
@@ -32,6 +33,13 @@ fun main(args: Array<String>) {
     clock.registerFunction({
       println("Disp Tick: $clockTarget")
       clockTarget = 0;
+
+      //Display
+      disp.draw();
+
+      //CPU Stuff
+      cpu.tickDelayTimer();
+      cpu.tickSoundTimer();
     }, 60)
 
 

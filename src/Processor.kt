@@ -22,6 +22,7 @@ class Processor() {
   private var timer: UInt = 0u;
   private val mem = Chip8.Memory();
   private var opcode: UInt = 0u;
+  private var displayBuffer = BooleanArray(0);
 
   fun tick(){
     opcode = fetch();
@@ -227,10 +228,59 @@ class Processor() {
       }
 
       isOpcodeGroup(0xDu, op) -> {
-        println("Display Opcode");
+        val nibble = getThirdNibble(op);
+        val sprite = UIntArray(nibble);
+
+        for(i in 0 until nibble){
+          // sprite[i] = mem.get(regI + i.toUInt())
+          this.drawSprite(regV[regX].toInt(), regV[regY].toInt(), mem.get(regI + i.toUInt()))
+        }
+      }
+
+      isOpcodeGroup(0xFu, op) -> {
+        when {
+          getByteFromOp(op) == 0x07u -> {
+            regV[regX] = delay;
+          }
+
+          //FX0A
+
+          getByteFromOp(op) == 0x15u -> {
+            delay = regV[regX];
+          }
+
+          getByteFromOp(op) == 0x18u -> {
+            timer = regV[regX];
+          }
+
+          getByteFromOp(op) == 0x1Eu -> {
+            regI = regI + regV[regX];
+          }
+
+          getByteFromOp(op) == 0x29u -> {
+            regI = mem.getCharSpriteAddr(regX.toUInt());
+          }
+        }
       }
 
       else -> println("Unknown opcode: ${op.toString(16)}");
+    }
+  }
+
+  // Todo: Move some interfaces around so this can be in the display class instead of here
+  // That will also clean up this code
+  fun drawSprite(x: Int,y: Int, spriteRow: UInt){
+    var bitsLeft: Int = 8;
+    var bit = false;
+
+    for(i in x until 64){
+      if(spriteRow.shr(8 - bitsLeft).and(1u).equals(1u)){
+        bit = true;
+      }else{
+        bit = false;
+      }
+      displayBuffer[(y * 32) + x] = displayBuffer[(y * 32) + x].xor(bit);
+      bitsLeft -= 1;
     }
   }
 
@@ -289,6 +339,10 @@ class Processor() {
     regV[0xF] = value.toUInt();
   }
 
+  fun setDisplayBuffer(buffer: BooleanArray){
+    displayBuffer = buffer;
+  }
+
   // Apparently kotlin's bitwise doesn't support bytes...
   fun shiftLeft(byte: UInt): UShort{
     var temp = byte.toUInt();
@@ -304,5 +358,13 @@ class Processor() {
     for(i in 0 until program.size){
       mem.set(i.toUInt() + START_ADDR, program[i])
     }
+  }
+
+  fun tickDelayTimer(){
+    delay -= 1u;
+  }
+
+  fun tickSoundTimer(){
+    timer -= 1u;
   }
 }
